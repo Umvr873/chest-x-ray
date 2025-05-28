@@ -19,3 +19,23 @@ A deep learning-powered web application for classifying chest X-ray images into 
 - Output: Classification probabilities with explanations
 - Framework: PyTorch + TorchVision
 - Interface: Streamlit web app
+
+# Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Umvr873/chest-xray-classifier.git
+   cd chest-xray-classifier
+
+##Install Independencies:
+pip install -r requirements.txt
+
+##Or manually install:
+pip install streamlit torch torchvision pillow numpy matplotlib
+
+
+
+
+
+
+
