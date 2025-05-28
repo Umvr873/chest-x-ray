@@ -13,11 +13,8 @@ class_names = ['COVID', 'Lung_Opacity', 'Normal', 'Viral Pneumonia']
 # Updated medical suggestions
 suggestions = {
     "COVID": "1. Initiate immediate isolation precautions to prevent transmission\n2. Obtain confirmatory RT-PCR testing for SARS-CoV-2\n3. Seek urgent evaluation by a healthcare provider for severity assessment\n4. Monitor oxygen saturation and respiratory status closely\n5. Consider follow-up imaging if clinical deterioration occurs",
-    
     "Normal": "1. No immediate pulmonary intervention required based on imaging findings\n2. Continue routine health maintenance and preventive care\n3. Re-evaluate if respiratory symptoms persist or worsen\n4. Consider alternative diagnoses for ongoing symptoms\n5. Follow standard screening guidelines for future imaging",
-    
     "Viral Pneumonia": "1. Initiate appropriate antiviral therapy per clinical guidelines\n2. Obtain viral PCR panel for pathogen identification\n3. Monitor for secondary bacterial infection\n4. Provide supportive care with oxygenation as needed\n5. Schedule follow-up imaging if no clinical improvement in 48-72 hours",
-    
     "Lung_Opacity": "1. Obtain high-resolution CT for further characterization of findings\n2. Consult pulmonary medicine for comprehensive evaluation\n3. Consider bronchoscopy or biopsy if malignancy is suspected\n4. Initiate appropriate antimicrobial therapy if infectious etiology suspected\n5. Schedule follow-up imaging based on suspected etiology"
 }
 
@@ -112,10 +109,10 @@ if uploaded_file:
     st.image(blended, caption="Model Decision Heatmap", use_container_width=True)
 
     st.subheader("🧠 Model Explanation:")
-   explanation = {
-    "COVID": "The model detected diffuse lung abnormalities, suggesting ground-glass opacities typical of COVID-19 pneumonia. These often appear as hazy, bilateral patches with peripheral distribution. Findings may overlap with other viral pneumonias. Clinical correlation and testing are needed for confirmation.",
-    "Lung_Opacity": "The model identified dense regions in lung fields, indicating possible fluid, infection, or masses. Opacities can vary from hazy to solid in appearance. They are nonspecific and require further evaluation. Differential includes pneumonia, edema, or fibrosis.",
-    "Viral Pneumonia": "The model highlighted irregular, patchy opacities consistent with viral pneumonia patterns. These differ from bacterial pneumonia's dense consolidation. Bilateral involvement is common. Distinction from COVID-19 requires clinical context.",
-    "Normal": "The model found no abnormal lung findings, showing clear fields and sharp anatomical borders. No consolidations or opacities were detected. Early disease may not be visible. Always correlate with patient symptoms."
-}
+    explanation = {
+        "COVID": "The model detected diffuse lung abnormalities, suggesting ground-glass opacities typical of COVID-19 pneumonia. These often appear as hazy, bilateral patches with peripheral distribution. Findings may overlap with other viral pneumonias. Clinical correlation and testing are needed for confirmation.",
+        "Lung_Opacity": "The model identified dense regions in lung fields, indicating possible fluid, infection, or masses. Opacities can vary from hazy to solid in appearance. They are nonspecific and require further evaluation. Differential includes pneumonia, edema, or fibrosis.",
+        "Viral Pneumonia": "The model highlighted irregular, patchy opacities consistent with viral pneumonia patterns. These differ from bacterial pneumonia's dense consolidation. Bilateral involvement is common. Distinction from COVID-19 requires clinical context.",
+        "Normal": "The model found no abnormal lung findings, showing clear fields and sharp anatomical borders. No consolidations or opacities were detected. Early disease may not be visible. Always correlate with patient symptoms."
+    }
     st.write(explanation.get(pred_class, "No explanation available."))
