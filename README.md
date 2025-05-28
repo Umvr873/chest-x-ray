@@ -33,6 +33,40 @@ pip install -r requirements.txt
 ##Or manually install:
 pip install streamlit torch torchvision pillow numpy matplotlib
 
+##Download the pre-trained model weights:
+resnet50_covid_classifier.pth
+
+##NOTE:
+Make sure all files are in the same folder
+app.py
+requirements.txt
+packages.txt
+resnet50_covid_classifier.pth
+
+chest-xray-classifier/
+├── app.py                 # Main application
+├── requirements.txt       # Python dependencies
+├── resnet50_covid_classifier.pth  # Model weights
+└── README.md             # Documentation
+
+##USAGE
+
+##Run the application:
+streamlit run app.py
+
+Upload a chest X-ray image (JPG/PNG) through the web interface
+View results including:
+Classification probabilities
+Model explanation
+Clinical recommendations
+Grad-CAM heatmap visualization
+
+##Dataset Information
+Model was trained on COVID-19_Radiography_Dataset(4 directories, 5 files)
+
+##Medical Disclaimer
+⚠️Important: This tool is for research/educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult qualified healthcare providers for medical decisions.
+
 
 
 
