@@ -10,7 +10,7 @@ import matplotlib.cm as cm
 # Class labels
 class_names = ['COVID', 'Lung_Opacity', 'Normal', 'Viral Pneumonia']
 
-# Updated medical suggestions
+# Medical suggestions
 suggestions = {
     "COVID": "1. Initiate immediate isolation precautions to prevent transmission\n2. Obtain confirmatory RT-PCR testing for SARS-CoV-2\n3. Seek urgent evaluation by a healthcare provider for severity assessment\n4. Monitor oxygen saturation and respiratory status closely\n5. Consider follow-up imaging if clinical deterioration occurs",
     "Normal": "1. No immediate pulmonary intervention required based on imaging findings\n2. Continue routine health maintenance and preventive care\n3. Re-evaluate if respiratory symptoms persist or worsen\n4. Consider alternative diagnoses for ongoing symptoms\n5. Follow standard screening guidelines for future imaging",
@@ -60,7 +60,6 @@ def generate_gradcam(model, image_tensor, class_idx):
 
     act = activations[0].squeeze(0)
     grad = gradients[0].squeeze(0)
-
     pooled_grad = torch.mean(grad, dim=(1, 2))
 
     for i in range(act.shape[0]):
@@ -71,48 +70,63 @@ def generate_gradcam(model, image_tensor, class_idx):
     heatmap /= np.max(heatmap) + 1e-8
     return heatmap
 
+# Model explanation
+explanation = {
+    "COVID": "The model detected diffuse lung abnormalities, suggesting ground-glass opacities typical of COVID-19 pneumonia. These often appear as hazy, bilateral patches with peripheral distribution. Findings may overlap with other viral pneumonias. Clinical correlation and testing are needed for confirmation.",
+    "Lung_Opacity": "The model identified dense regions in lung fields, indicating possible fluid, infection, or masses. Opacities can vary from hazy to solid in appearance. They are nonspecific and require further evaluation. Differential includes pneumonia, edema, or fibrosis.",
+    "Viral Pneumonia": "The model highlighted irregular, patchy opacities consistent with viral pneumonia patterns. These differ from bacterial pneumonia's dense consolidation. Bilateral involvement is common. Distinction from COVID-19 requires clinical context.",
+    "Normal": "The model found no abnormal lung findings, showing clear fields and sharp anatomical borders. No consolidations or opacities were detected. Early disease may not be visible. Always correlate with patient symptoms."
+}
+
 # Streamlit UI
-st.title("\U0001FA7A\U0001FA7B Chest X-ray Classifier")
-st.write("Upload a chest X-ray image to detect COVID-19, Normal, Viral Pneumonia, or Lung Opacity.")
+st.title("🩻🧠 Chest X-ray Classifier")
+st.write("Upload a chest X-ray image to detect **COVID-19**, **Normal**, **Viral Pneumonia**, or **Lung Opacity**.")
 
 uploaded_file = st.file_uploader("Upload a chest X-ray image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_container_width=True)
+    try:
+        image = Image.open(uploaded_file).convert("RGB")
 
-    img_tensor = transform(image).unsqueeze(0)
-    img_tensor.requires_grad_()
+        # Simple check: Ensure image has expected grayscale or X-ray-like pixel profile
+        grayscale_ratio = np.mean(np.abs(np.array(image)[:, :, 0] - np.array(image)[:, :, 1]))
+        if grayscale_ratio > 30:
+            st.error("🚫 This doesn't appear to be a valid chest X-ray. Please upload a proper X-ray image.")
+        else:
+            st.image(image, caption="Uploaded Image", use_container_width=True)
 
-    outputs = model(img_tensor)
-    probs = F.softmax(outputs[0], dim=0)
-    pred_idx = torch.argmax(probs).item()
-    pred_class = class_names[pred_idx]
+            img_tensor = transform(image).unsqueeze(0)
+            img_tensor.requires_grad_()
 
-    st.subheader("\U0001F50D Prediction Results:")
-    for i, prob in enumerate(probs):
-        st.write(f"{class_names[i]}: {prob.item() * 100:.2f}%")
+            outputs = model(img_tensor)
+            probs = F.softmax(outputs[0], dim=0)
+            pred_idx = torch.argmax(probs).item()
+            pred_class = class_names[pred_idx]
 
-    st.success(f"\U0001F52C Most likely: **{pred_class}**")
+            st.subheader("🔍 Prediction Results:")
+            for i, prob in enumerate(probs):
+                st.write(f"{class_names[i]}: {prob.item() * 100:.2f}%")
 
-    st.subheader("\U0001FA7B Suggested Medical Step:")
-    st.info(suggestions[pred_class])
+            st.success(f"🔬 Most likely: **{pred_class}**")
 
-    st.subheader("\U0001F321️ Grad-CAM Heatmap:")
-    heatmap = generate_gradcam(model, img_tensor, pred_idx)
+            st.subheader("📋 Suggested Medical Step:")
+            st.info(suggestions[pred_class])
 
-    heatmap_img = Image.fromarray(np.uint8(255 * heatmap)).resize(image.size)
-    heatmap_color = cm.jet(np.array(heatmap_img) / 255.0)[..., :3]
-    blended = np.array(image) / 255.0 * 0.6 + heatmap_color * 0.4
-    blended = np.clip(blended, 0, 1)
+            st.subheader("🌡️ Grad-CAM Heatmap:")
+            heatmap = generate_gradcam(model, img_tensor, pred_idx)
 
-    st.image(blended, caption="Model Decision Heatmap", use_container_width=True)
+            # Blend heatmap with image safely
+            heatmap_resized = Image.fromarray(np.uint8(255 * heatmap)).resize(image.size)
+            heatmap_resized = np.array(heatmap_resized)
+            image_np = np.array(image).astype(np.float32) / 255.0
+            heatmap_color = cm.jet(heatmap_resized / 255.0)[..., :3]
+            blended = 0.6 * image_np + 0.4 * heatmap_color
+            blended = np.clip(blended, 0, 1)
 
-    st.subheader("🧠 Model Explanation:")
-    explanation = {
-        "COVID": "The model detected diffuse lung abnormalities, suggesting ground-glass opacities typical of COVID-19 pneumonia. These often appear as hazy, bilateral patches with peripheral distribution. Findings may overlap with other viral pneumonias. Clinical correlation and testing are needed for confirmation.",
-        "Lung_Opacity": "The model identified dense regions in lung fields, indicating possible fluid, infection, or masses. Opacities can vary from hazy to solid in appearance. They are nonspecific and require further evaluation. Differential includes pneumonia, edema, or fibrosis.",
-        "Viral Pneumonia": "The model highlighted irregular, patchy opacities consistent with viral pneumonia patterns. These differ from bacterial pneumonia's dense consolidation. Bilateral involvement is common. Distinction from COVID-19 requires clinical context.",
-        "Normal": "The model found no abnormal lung findings, showing clear fields and sharp anatomical borders. No consolidations or opacities were detected. Early disease may not be visible. Always correlate with patient symptoms."
-    }
-    st.write(explanation.get(pred_class, "No explanation available."))
+            st.image(blended, caption="Model Decision Heatmap", use_container_width=True)
+
+            st.subheader("🧠 Model Explanation:")
+            st.write(explanation.get(pred_class, "No explanation available."))
+
+    except Exception as e:
+        st.error(f"🚫 Unexpected error: {e}")
